@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.coverage
+*.pyc
+*.pyo
+*.pyd
+
+memos_data/
+
+dashboard/node_modules/
+dashboard/dist/
+
+.DS_Store
+Thumbs.db
