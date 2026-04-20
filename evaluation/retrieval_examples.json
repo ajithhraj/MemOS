@@ -1,0 +1,49 @@
+[
+  {
+    "query": "What is MemOS building toward?",
+    "expected_keywords": [
+      "MemOS",
+      "local-first",
+      "portfolio"
+    ],
+    "matched_keywords": [
+      "MemOS",
+      "local-first",
+      "portfolio"
+    ],
+    "match_ratio": 1.0,
+    "context": "[MEMORY CONTEXT]\nUse these memories if they improve the answer:\n1. [PROJECT] Ajith is building MemOS as a local-first memory layer for LLM applications and portfolio demos. (importance=0.92, last_seen=0h ago)\n2. [FACT] MemOS uses an Ebbinghaus-style forgetting engine with a default decay rate of 0.008 per hour. (importance=0.88, last_seen=0h ago)\n3. [DECISION] Pinned memories never decay below an importance floor of 0.3. (importance=0.91, last_seen=0h ago)\n4. [PREFERENCE] Ajith wants the forgetting engine to stay visible in the UI because it is the most novel part of MemOS. (importance=0.84, last_seen=0h ago)"
+  },
+  {
+    "query": "How does memory decay work?",
+    "expected_keywords": [
+      "forgetting",
+      "decay",
+      "0.008",
+      "pinned"
+    ],
+    "matched_keywords": [
+      "forgetting",
+      "decay",
+      "0.008",
+      "pinned"
+    ],
+    "match_ratio": 1.0,
+    "context": "[MEMORY CONTEXT]\nUse these memories if they improve the answer:\n1. [DECISION] Pinned memories never decay below an importance floor of 0.3. (importance=0.91, last_seen=0h ago)\n2. [FACT] MemOS uses an Ebbinghaus-style forgetting engine with a default decay rate of 0.008 per hour. (importance=0.88, last_seen=0h ago)\n3. [PROJECT] Ajith is building MemOS as a local-first memory layer for LLM applications and portfolio demos. (importance=0.92, last_seen=0h ago)\n4. [PREFERENCE] Ajith wants the forgetting engine to stay visible in the UI because it is the most novel part of MemOS. (importance=0.84, last_seen=0h ago)"
+  },
+  {
+    "query": "What should stay visible in the UI?",
+    "expected_keywords": [
+      "visible",
+      "UI",
+      "forgetting engine"
+    ],
+    "matched_keywords": [
+      "visible",
+      "UI",
+      "forgetting engine"
+    ],
+    "match_ratio": 1.0,
+    "context": "[MEMORY CONTEXT]\nUse these memories if they improve the answer:\n1. [PREFERENCE] Ajith wants the forgetting engine to stay visible in the UI because it is the most novel part of MemOS. (importance=0.84, last_seen=0h ago)\n2. [DECISION] Pinned memories never decay below an importance floor of 0.3. (importance=0.91, last_seen=0h ago)\n3. [FACT] MemOS uses an Ebbinghaus-style forgetting engine with a default decay rate of 0.008 per hour. (importance=0.88, last_seen=0h ago)\n4. [FACT] The dashboard shows a live memory graph, a retrieval panel, and a decay curve preview. (importance=0.77, last_seen=0h ago)"
+  }
+]
