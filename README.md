@@ -1,7 +1,7 @@
 # MemOS
 
 ![Python](https://img.shields.io/badge/python-3.11+-blue?style=flat-square)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115-teal?style=flat-square)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 ![Status](https://img.shields.io/badge/status-active-brightgreen?style=flat-square)
 
@@ -19,10 +19,20 @@ User: The dashboard should show a live graph and a decay preview.
 User: What do you remember about this project?
 
 MemOS injects:
-1. [PROJECT]    I am building MemOS as a local-first memory layer (importance=0.84)
-2. [PREFERENCE] The forgetting engine is the most novel part     (importance=0.81, pinned)
-3. [FACT]       Dashboard: live graph + decay preview            (importance=0.61)
+1. [PROJECT]    building MemOS as a local-first memory layer   importance=0.84
+2. [PREFERENCE] forgetting engine is the most novel part       importance=0.81  pinned
+3. [FACT]       dashboard: live graph + decay preview          importance=0.61
 ```
+
+---
+
+## Dashboard
+
+![MemOS dashboard overview](docs/assets/dashboard-overview.svg)
+
+The memory graph renders live — node size encodes importance, colours encode entity type, and the panel on the right lets you query, inspect, and forget individual nodes.
+
+![MemOS retrieval panel](docs/assets/dashboard-query.svg)
 
 ---
 
@@ -31,35 +41,28 @@ MemOS injects:
 ```
 User message
      │
-     ├─► Extractor (Claude Haiku)   → entities + importance scores
-     │         │
-     │    ┌────┴────────────────┐
-     │    │   Entity Graph      │   NetworkX — nodes, edges, relations
-     │    │   Vector Store      │   ChromaDB — semantic embeddings
-     │    └────────┬────────────┘
-     │             │  (hourly) Decay engine — importance × e^(-rate × hours)
+     ├──► Extractor (Claude Haiku)  →  entities + importance scores
+     │              │
+     │     ┌────────┴──────────────┐
+     │     │  Entity Graph         │  NetworkX — nodes, edges, relations
+     │     │  Vector Store         │  ChromaDB — semantic embeddings
+     │     └────────┬──────────────┘
+     │              │  hourly: importance × e^(−rate × hours)
      │
-     └─► Query → Graph traversal + Vector search → Ranked context → LLM
+     └──► Query → graph traversal + vector search → ranked context → LLM
 ```
 
-Three layers work together on every message:
+Three things happen on every message:
 
-- **Write path** — extractor pulls facts from each message, scorer assigns importance 0–1, both graph and vector store are updated.
-- **Decay engine** — runs hourly via APScheduler. Every node's importance decays exponentially. Nodes below the prune threshold are deleted. Pinned nodes (`!remember`) never drop below 0.3.
-- **Read path** — on each query, graph traversal and vector similarity are merged and scored: `0.6 × graph_relevance + 0.3 × vector_similarity + 0.1 × recency`. Top-k results are injected as a system prompt prefix.
+**Write path** — the extractor pulls entities from the message, the scorer assigns importance 0–1, and both the graph and vector store are updated.
 
----
+**Decay engine** — runs hourly via APScheduler. Every node's importance decays exponentially (`rate=0.008`, half-life ≈ 87 hours). Nodes below the prune threshold (0.05) are deleted. Pinned nodes (`!remember`) never drop below 0.30.
 
-## What is included
+**Read path** — on each query, graph traversal and vector similarity results are merged and scored: `0.6 × graph_relevance + 0.3 × vector_similarity + 0.1 × recency`. The top-k results are injected as a system prompt prefix.
 
-| Component | Description |
-|-----------|-------------|
-| `memos/core/` | `MemoryNode` dataclass, extractor, scorer, decay engine, store |
-| `memos/retrieval/` | Graph traversal, vector query, context injector |
-| `memos/api/` | FastAPI routes, Pydantic schemas, SSE events stream |
-| `dashboard/` | React + react-force-graph-2d live memory graph |
-| `evaluation/` | Retrieval walkthroughs + decay projection CSV + SVG chart |
-| `tests/` | Decay math, extraction, end-to-end retrieval |
+### Decay behaviour
+
+![Decay behaviour](docs/assets/decay-behavior.svg)
 
 ---
 
@@ -67,7 +70,7 @@ Three layers work together on every message:
 
 ### Backend
 
-**Windows:**
+**Windows**
 ```cmd
 python -m venv .venv
 .venv\Scripts\Activate.ps1
@@ -76,7 +79,7 @@ copy .env.example .env
 uvicorn memos.api.main:app --reload --port 8000
 ```
 
-**Mac / Linux:**
+**Mac / Linux**
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -87,19 +90,14 @@ uvicorn memos.api.main:app --reload --port 8000
 
 Then open `http://localhost:8000/docs` for the interactive API explorer.
 
-**Optional extras:**
+**Optional extras**
 ```bash
-# Enable Claude-based extraction
-pip install "memos-ai[llm]"
-
-# Enable ChromaDB + sentence-transformers (recommended)
-pip install "memos-ai[vector]"
-
-# Everything
-pip install "memos-ai[llm,vector]"
+pip install "memos-ai[llm]"        # Claude-based extraction
+pip install "memos-ai[vector]"     # ChromaDB + sentence-transformers
+pip install "memos-ai[all]"        # everything
 ```
 
-Without these extras, MemOS runs with a lightweight keyword extractor and an in-memory JSON fallback — useful for local dev and CI without API keys.
+Without these extras MemOS runs with a lightweight keyword extractor and an in-memory JSON fallback — useful for local dev and CI with no API keys.
 
 ### Frontend
 
@@ -107,9 +105,8 @@ Without these extras, MemOS runs with a lightweight keyword extractor and an in-
 cd dashboard
 npm install
 npm run dev
+# http://localhost:5173
 ```
-
-Dashboard runs at `http://localhost:5173` and expects the API at `http://localhost:8000`.
 
 ### Quick test
 
@@ -119,12 +116,12 @@ curl -X POST http://localhost:8000/memory/ingest \
   -H "Content-Type: application/json" \
   -d "{\"message\": \"I am building a memory system for LLMs called MemOS\"}"
 
-# Query memory
+# Query
 curl -X POST http://localhost:8000/memory/query \
   -H "Content-Type: application/json" \
   -d "{\"query\": \"what am I working on?\", \"top_k\": 5}"
 
-# See the graph
+# Graph JSON (for dashboard)
 curl http://localhost:8000/memory/graph
 
 # Stats
@@ -142,27 +139,11 @@ curl http://localhost:8000/memory/stats
 | `GET` | `/memory/graph` | D3-compatible node-link JSON for the dashboard |
 | `GET` | `/memory/stats` | Node count, avg importance, pinned count |
 | `GET` | `/memory/export` | Full graph export as JSON |
-| `POST` | `/memory/{id}/reinforce` | Manually boost a node's importance + pin it |
+| `POST` | `/memory/{id}/reinforce` | Boost a node's importance and pin it |
 | `DELETE` | `/memory/{id}` | Forget a specific memory node |
-| `GET` | `/memory/events` | SSE stream — live updates to the dashboard |
+| `GET` | `/memory/events` | SSE stream for live dashboard updates |
 
-Full OpenAPI docs auto-generated at `http://localhost:8000/docs`.
-
----
-
-## Evaluation
-
-The `evaluation/` folder contains artifacts that make the system's behaviour inspectable rather than opaque:
-
-- `evaluation/retrieval_examples.json` — concrete retrieval walkthroughs with expected vs actual results
-- `evaluation/decay_projection.csv` — hour-by-hour importance scores for regular and pinned memories
-- `docs/evaluation.md` — human-readable summary with the decay chart
-
-To regenerate all artifacts after code changes:
-
-```bash
-python scripts/generate_eval_artifacts.py
-```
+Full OpenAPI docs at `http://localhost:8000/docs`.
 
 ---
 
@@ -185,12 +166,25 @@ memos/
 │       ├── main.py          FastAPI app + scheduler
 │       ├── routes.py        Endpoint handlers
 │       └── schemas.py       Pydantic models
-├── dashboard/               React frontend
-├── docs/                    Evaluation write-ups + assets
+├── dashboard/               React + react-force-graph-2d
+├── docs/                    Assets and evaluation write-ups
 ├── evaluation/              Retrieval examples + decay CSV
 ├── scripts/                 Artifact generation
 └── tests/                   pytest suite
 ```
+
+---
+
+## What is included
+
+| Component | Description |
+|-----------|-------------|
+| `memos/core/` | `MemoryNode` dataclass, extractor, scorer, decay engine, store |
+| `memos/retrieval/` | Graph traversal, vector query, context injector |
+| `memos/api/` | FastAPI routes, Pydantic schemas, SSE events stream |
+| `dashboard/` | React + react-force-graph-2d live memory graph |
+| `evaluation/` | Retrieval walkthroughs + decay projection CSV + SVG chart |
+| `tests/` | Decay math, extraction, end-to-end retrieval |
 
 ---
 
@@ -205,6 +199,21 @@ memos/
 | Decay scheduler | `apscheduler` — background thread, no Redis |
 | API | `fastapi` + `uvicorn` — async, auto OpenAPI docs |
 | Dashboard | `react` + `react-force-graph-2d` — live graph viz |
+
+---
+
+## Evaluation
+
+The `evaluation/` folder makes the system's behaviour inspectable:
+
+- [`evaluation/retrieval_examples.json`](evaluation/retrieval_examples.json) — concrete retrieval walkthroughs
+- [`evaluation/decay_projection.csv`](evaluation/decay_projection.csv) — hour-by-hour importance scores
+- [`docs/evaluation.md`](docs/evaluation.md) — human-readable summary
+
+To regenerate after code changes:
+```bash
+python scripts/generate_eval_artifacts.py
+```
 
 ---
 
