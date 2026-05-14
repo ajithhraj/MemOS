@@ -11,8 +11,12 @@ PRUNE_THRESHOLD = 0.05
 
 def decay_node(node: MemoryNode, rate: float = DECAY_RATE) -> MemoryNode:
     """Apply Ebbinghaus-style exponential decay to one node."""
+    if "_original_importance" not in node.metadata:
+        node.metadata["_original_importance"] = node.importance
+
     hours = node.hours_since_access()
-    new_importance = node.importance * math.exp(-rate * hours)
+    original = node.metadata["_original_importance"]
+    new_importance = original * math.exp(-rate * hours)
     if node.pinned:
         new_importance = max(new_importance, PINNED_FLOOR)
     node.importance = round(max(0.0, new_importance), 4)

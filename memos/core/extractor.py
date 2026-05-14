@@ -115,7 +115,7 @@ def _nodes_from_payload(payload: Any, source_text: str) -> list[MemoryNode]:
 
 def _extract_relations(text: str) -> list[str]:
     candidates = re.findall(r"\b[A-Z][a-zA-Z0-9_-]+\b", text)
-    lowered = {word.lower() for word in ("I", "My", "The")}
+    lowered = {word.lower() for word in ("I", "My", "The", "We", "He", "She", "It", "This", "That", "A", "An", "Is", "Are")}
     seen: set[str] = set()
     relations: list[str] = []
     for value in candidates:

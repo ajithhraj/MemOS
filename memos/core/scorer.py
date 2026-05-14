@@ -34,7 +34,10 @@ def infer_entity_type(text: str) -> EntityType:
 def score_content(content: str, entity_type: EntityType | None = None, pinned: bool = False) -> float:
     resolved = entity_type or infer_entity_type(content)
     score = BASE_SCORES[resolved]
-    if len(content.split()) > 12:
+    words = len(content.split())
+    if words > 20:
+        score += 0.08
+    elif words > 10:
         score += 0.05
     if any(word in content.lower() for word in ("critical", "important", "remember")):
         score += 0.1
