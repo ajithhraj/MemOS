@@ -29,6 +29,7 @@ class MemoryNode:
         self.last_accessed = datetime.now(UTC)
         self.access_count += 1
         self.importance = min(1.0, round(self.importance + boost, 4))
+        self.metadata["_original_importance"] = self.importance
 
     def hours_since_access(self, now: datetime | None = None) -> float:
         reference = now or datetime.now(UTC)
